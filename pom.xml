@@ -104,8 +104,11 @@
                         <configuration>
                             <roots>
                                 <root>src/main/java</root>
-                                <root>src/test</root>
+                                <root>src/test/java</root>
                             </roots>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
                             <licenseName>bsd_3</licenseName>
                             <encoding>UTF-8</encoding>
                             <inceptionYear>2014</inceptionYear>
