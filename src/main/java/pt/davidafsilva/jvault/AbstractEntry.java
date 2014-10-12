@@ -97,4 +97,9 @@ class AbstractEntry implements Entry {
     result = 31 * result + value.hashCode();
     return result;
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{" + "key: " + key + ", value: " + value + "}";
+  }
 }

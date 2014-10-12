@@ -1,5 +1,8 @@
 package pt.davidafsilva.jvault;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,6 +19,9 @@ import java.util.Objects;
  * @author David Silva
  */
 public final class VaultBuilder {
+
+  // logger
+  private static final Logger log = LoggerFactory.getLogger(VaultBuilder.class);
 
   // static properties / defaults
   private static final Collection<Integer> SUPPORTED_KEY_SIZES = Arrays.asList(128, 192, 256);
@@ -140,6 +146,17 @@ public final class VaultBuilder {
   public Vault build() throws VaultInitializationException {
     Objects.requireNonNull(password, "A valid password must be set");
     Objects.requireNonNull(salt, "A valid salt must be set");
+    // debug should not be enabled in production!
+    log.debug("Creating a vault with the settings:{}" +
+              "  password: {},{}" +
+              "      salt: {},{}" +
+              "iterations: {},{}" +
+              "  key size: {}",
+              System.lineSeparator(),
+              password, System.lineSeparator(),
+              salt, System.lineSeparator(),
+              iterations, System.lineSeparator(),
+              keySize);
     final Vault vault;
     switch (type) {
       case IN_MEMORY:

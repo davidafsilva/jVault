@@ -35,6 +35,8 @@ package pt.davidafsilva.jvault;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -46,6 +48,7 @@ import java.security.spec.KeySpec;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,6 +70,9 @@ import static java.util.stream.Collectors.toList;
  * @author David Silva
  */
 final class InMemoryVault implements Vault {
+
+  // logger
+  private static final Logger log = LoggerFactory.getLogger(InMemoryVault.class);
 
   // vault cipher settings
   private static final String CIPHER_SETTINGS = "AES/CBC/PKCS5Padding";
@@ -119,7 +125,11 @@ final class InMemoryVault implements Vault {
 
       // create the secret from the derived key using AES
       secret = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), SECRET_ALGORITHM);
+
+      // log
+      log.info("successfully initialized an in-memory vault.");
     } catch (final InvalidKeySpecException | NoSuchAlgorithmException e) {
+      log.error("An error occurred while initializing the vault.", e);
       throw new VaultInitializationException("An error occurred while initializing the vault.", e);
     }
   }
@@ -138,6 +148,8 @@ final class InMemoryVault implements Vault {
 
   @Override
   public SecureEntry write(final UnsecureEntry entry) throws VaultOperationException {
+    Objects.requireNonNull(entry, "Invalid entry specified");
+    log.info("writing/updating '{}' entry in the vault..", entry.getKey());
     final SecureEntryWrapper secureEntryWrapper = secure(entry);
     map.put(entry.getKey(), secureEntryWrapper);
     return secureEntryWrapper.entry;
@@ -145,6 +157,8 @@ final class InMemoryVault implements Vault {
 
   @Override
   public Optional<SecureEntry> delete(final String key) {
+    Objects.requireNonNull(key, "Invalid key specified");
+    log.info("deleting '{}' entry in the vault..", key);
     final SecureEntryWrapper secureEntryWrapper = map.remove(key);
     return Optional.ofNullable(secureEntryWrapper == null ? null : secureEntryWrapper.entry);
   }
@@ -153,8 +167,9 @@ final class InMemoryVault implements Vault {
   public UnsecureEntry translate(final SecureEntry entry) throws VaultOperationException {
     final SecureEntryWrapper secureEntryWrapper = map.get(entry.getKey());
     if (secureEntryWrapper == null) {
-      throw new IllegalArgumentException(
-          String.format("no such key '%s' in the vault.", entry.getKey()));
+      final String errorMessage = String.format("no such key '%s' in the vault.", entry.getKey());
+      log.error(errorMessage);
+      throw new IllegalArgumentException(errorMessage);
     }
     return unsecure(secureEntryWrapper);
   }
@@ -193,6 +208,10 @@ final class InMemoryVault implements Vault {
       // store it in the map
       map.put(entry.getKey(), entryWrapper);
 
+      // log the cipher
+      log.debug("secured '{}' into '{}", entry, entryWrapper);
+
+      // return the wrapper
       return entryWrapper;
     } catch (final NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException |
         BadPaddingException | InvalidParameterSpecException | NoSuchPaddingException e) {
@@ -213,19 +232,29 @@ final class InMemoryVault implements Vault {
     try {
       // get the byte data
       final byte[] bValue = Hex.decodeHex(entry.entry.getValue().toCharArray());
+
       // get the cipher algorithm instance
       final Cipher cipher = Cipher.getInstance(CIPHER_SETTINGS);
+
       // initialize the cipher for decryption with both secret and initial vector
       cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(entry.iv));
+
       // decipher and convert
-      return UnsecureEntry.of(entry.entry.getKey(),
-                              new String(cipher.doFinal(bValue), StandardCharsets.UTF_8));
+      final UnsecureEntry unsecureEntry = UnsecureEntry
+          .of(entry.entry.getKey(), new String(cipher.doFinal(bValue), StandardCharsets.UTF_8));
+
+      // log
+      log.debug("unsecured '{}' into '{}", entry, unsecureEntry);
+
+      // return the entry
+      return unsecureEntry;
     } catch (final NoSuchAlgorithmException | NoSuchPaddingException | BadPaddingException |
         IllegalBlockSizeException | InvalidAlgorithmParameterException | InvalidKeyException |
         DecoderException e) {
-      throw new VaultOperationException(
-          String.format("An error occurred while deciphering the entry with key: %s",
-                        entry.entry.getKey()), e);
+      final String errorMessage = String.format("An error occurred while deciphering the entry "
+                                                + "with key: %s", entry.entry.getKey());
+      log.error(errorMessage, e);
+      throw new VaultOperationException(errorMessage, e);
     }
   }
 
@@ -249,6 +278,11 @@ final class InMemoryVault implements Vault {
     private SecureEntryWrapper(final SecureEntry entry, final byte[] iv) {
       this.entry = entry;
       this.iv = iv;
+    }
+
+    @Override
+    public String toString() {
+      return "Wrapper(IV: " + Hex.encodeHexString(iv) + ", " + entry.toString() + ")";
     }
   }
 }

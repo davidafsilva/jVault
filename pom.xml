@@ -15,9 +15,11 @@
 
         <!-- compile dependencies versions -->
         <commons.codec.version>1.9</commons.codec.version>
+        <slf4j.version>1.7.7</slf4j.version>
 
         <!-- test dependencies versions -->
         <junit.version>4.11</junit.version>
+        <logback.version>1.1.2</logback.version>
 
         <!-- build dependencies versions -->
         <maven.compiler.version>3.1</maven.compiler.version>
@@ -34,12 +36,23 @@
             <artifactId>commons-codec</artifactId>
             <version>${commons.codec.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
 
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
