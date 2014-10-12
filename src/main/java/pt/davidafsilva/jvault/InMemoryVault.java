@@ -66,7 +66,7 @@ import static java.util.stream.Collectors.toList;
  *
  * @author David Silva
  */
-public final class InMemoryVault implements Vault {
+final class InMemoryVault implements Vault {
 
   // vault cipher settings
   private static final String CIPHER_SETTINGS = "AES/CBC/PKCS5Padding";

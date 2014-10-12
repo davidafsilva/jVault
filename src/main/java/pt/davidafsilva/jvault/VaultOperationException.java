@@ -39,7 +39,7 @@ package pt.davidafsilva.jvault;
  *
  * @author David Silva
  */
-public class VaultOperationException extends Exception {
+public final class VaultOperationException extends Exception {
 
   /**
    * Constructs the operational exception with the error message and original cause.
