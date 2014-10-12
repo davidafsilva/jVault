@@ -21,6 +21,8 @@
 
         <!-- build dependencies versions -->
         <maven.compiler.version>3.1</maven.compiler.version>
+        <maven.source.version>2.3</maven.source.version>
+        <maven.javadoc.version>2.10.1</maven.javadoc.version>
         <javac.version>1.8</javac.version>
     </properties>
 
@@ -55,6 +57,38 @@
                     <target>${javac.version}</target>
                 </configuration>
             </plugin>
+            <!-- compile a jar with sources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- compile a jar with the javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.version}</version>
+                <configuration>
+                    <show>public</show>
+                    <nohelp>true</nohelp>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- license handling -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -77,8 +111,6 @@
                             <inceptionYear>2014</inceptionYear>
                             <organizationName>David Silva</organizationName>
                             <projectName>jVault</projectName>
-                            <dryRun>true</dryRun>
-                            <verbose>true</verbose>
                         </configuration>
                     </execution>
                 </executions>

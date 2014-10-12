@@ -55,11 +55,7 @@ class AbstractEntry implements Entry {
     }
 
     final AbstractEntry that = (AbstractEntry) o;
-    if (!key.equals(that.key)) {
-      return false;
-    }
-    return value.equals(that.value);
-
+    return key.equals(that.key) && value.equals(that.value);
   }
 
   @Override
