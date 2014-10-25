@@ -4,15 +4,28 @@ jVault is a secure key-value pairs storage.<br/>
 The vault ciphers the entries value with AES (variant based on the specified key size) with a key 
 derived from a provided password (PBE) and salt. Padding is also added, if required.
 
-Currently, there's only one vault implementation supported: 
+Currently, there are two vault implementation supported: 
 [In-Memory](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/InMemoryVault.java).
+[File](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/ByteFileVault.java).
 
 
 Usage:
 ------
-#### 1. Use the VaultBuilder to initialize a secure vault
+#### 1. Use the VaultBuilder to initialize a in-memory secure vault
 ```java
    final Vault vault = VaultBuilder.create()
+                            .inMemory()
+                            .password("PM6CduB3rAhcdEKN961NR0583620vHJM")
+                            .salt("naoQ8qbq")
+                            .iterations(32768)
+                            .keySize(256)
+                            .build();
+```
+
+#### 2. Use the VaultBuilder to initialize a file based secure vault
+```java
+   final Vault vault = VaultBuilder.create()
+                            .rawFile(FileSystems.getDefault().getPath("vaults", "notes.vault"))
                             .password("PM6CduB3rAhcdEKN961NR0583620vHJM")
                             .salt("naoQ8qbq")
                             .iterations(32768)
