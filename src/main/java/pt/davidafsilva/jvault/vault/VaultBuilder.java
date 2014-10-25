@@ -47,7 +47,7 @@ import java.util.Objects;
  * The vaults builder.
  *
  * The builders defaults to the following settings:
- * <table>
+ * <table summary="Default builder settings">
  *   <tr>
  *     <td><strong>Vault Type</strong></td>
  *     <td>In-Memory</td>
