@@ -3,6 +3,7 @@ jVault
 jVault is a secure key-value pairs storage.<br/>
 The vault ciphers the entries value with AES (variant based on the specified key size) with a key 
 derived from a provided password (PBE) and salt. Padding is also added, if required.
+Additionally, file based vaults provide integrity check by including a MAC (HMAC with SHA-256) in the file 
 
 Currently, there are two vault implementation supported: 
 [In-Memory](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/InMemoryVault.java).
