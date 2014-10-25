@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.model;
 
 /*
  * #%L
@@ -33,31 +33,38 @@ package pt.davidafsilva.jvault;
  * #L%
  */
 
+import java.time.Instant;
+
 /**
- * This interface represents a key-value pair entry.
+ * This entity represents an unsecured {@link Entry}, in which the {@link #getValue() value} is in
+ * plaintext.
+ *
+ * This class is immutable, therefore it inherits it's thread-safe nature.
  *
  * @author David Silva
+ * @see SecureEntry
  */
-public interface Entry {
+public final class UnsecureEntry extends AbstractEntry {
 
   /**
-   * Returns the key associated with this entry
+   * Creates a new secured entry
    *
-   * @return the key
+   * @param timestamp the entry's creation timestamp
+   * @param key       the original key
+   * @param value     the plaintext value
    */
-  String getKey();
+  private UnsecureEntry(final long timestamp, final String key, final String value) {
+    super(timestamp, key, value);
+  }
 
   /**
-   * Returns the value associated with this entry
+   * Static factory method for the creation of an {@link UnsecureEntry}.
    *
-   * @return the value
+   * @param key   the original key
+   * @param value the plaintext value
+   * @return an unsecure entry with the given key-value pair
    */
-  String getValue();
-
-  /**
-   * Returns the creation date of the entry
-   *
-   * @return the entry's creation date
-   */
-  long getCreationDate();
+  public static UnsecureEntry of(final String key, final String value) {
+    return new UnsecureEntry(Instant.now().toEpochMilli(), key, value);
+  }
 }

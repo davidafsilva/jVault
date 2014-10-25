@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.model;
 
 /*
  * #%L
@@ -33,22 +33,75 @@ package pt.davidafsilva.jvault;
  * #L%
  */
 
+import java.util.Objects;
+
 /**
- * This exception denotes an error that occurred while an arbitrary vault was being initialized,
- * such as invalid password and/or salts were provided, or the JVM not supporting the used
- * algorithm.
+ * This entry contains the common code that both {@link UnsecureEntry unsecure} and {@link
+ * SecureEntry secure} entries share.
+ *
+ * This class is immutable, therefore it inherits it's thread-safe nature.
  *
  * @author David Silva
  */
-public final class VaultInitializationException extends Exception {
+class AbstractEntry implements Entry {
+
+  // properties
+  private final long timestamp;
+  private final String key;
+  private final String value;
 
   /**
-   * Constructs the initialization exception with the error message and original cause.
+   * Default constructor of the entry
    *
-   * @param message the brief error description
-   * @param cause   the original cause of the exception
+   * @param timestamp the entry's creation timestamp
+   * @param key       the entry key
+   * @param value     the entry value
    */
-  VaultInitializationException(final String message, final Throwable cause) {
-    super(message, cause);
+  AbstractEntry(final long timestamp, final String key, final String value) {
+    Objects.requireNonNull(key, "key must not be null");
+    Objects.requireNonNull(value, "value must not be null");
+    this.timestamp = timestamp;
+    this.key = key;
+    this.value = value;
+  }
+
+  @Override
+  public long getCreationDate() {
+    return timestamp;
+  }
+
+  @Override
+  public String getKey() {
+    return key;
+  }
+
+  @Override
+  public String getValue() {
+    return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    final AbstractEntry that = (AbstractEntry) o;
+    return key.equals(that.key) && value.equals(that.value);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = key.hashCode();
+    result = 31 * result + value.hashCode();
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{" + "key: " + key + ", value: " + value + "}";
   }
 }

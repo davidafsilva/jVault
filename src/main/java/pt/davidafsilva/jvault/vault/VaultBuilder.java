@@ -1,9 +1,11 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.vault;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -35,6 +37,7 @@ public final class VaultBuilder {
   private byte[] salt;
   private int iterations = DEFAULT_ITERATIONS;
   private int keySize = DEFAULT_KEY_SIZE;
+  private Path path;
 
   // private constructor
   private VaultBuilder() {
@@ -56,6 +59,25 @@ public final class VaultBuilder {
    */
   public VaultBuilder inMemory() {
     this.type = VaultType.IN_MEMORY;
+    return this;
+  }
+
+  /**
+   * Selects the raw file vault implementation to be built.
+   *
+   * @param path the vault file
+   * @return the current builder
+   */
+  public VaultBuilder rawFile(final Path path) {
+    Objects.requireNonNull(path, "Invalid vault file");
+    final File fp = path.toFile();
+    if (fp.exists() && (!fp.isFile() || !fp.canRead())) {
+      throw new IllegalArgumentException("Invalid vault file, not a file or no read permissions");
+    } else if (!fp.canWrite()) {
+      throw new IllegalArgumentException("Invalid vault file, no write permissions");
+    }
+    this.path = path;
+    this.type = VaultType.RAW_FILE;
     return this;
   }
 
@@ -148,19 +170,26 @@ public final class VaultBuilder {
     Objects.requireNonNull(salt, "A valid salt must be set");
     // debug should not be enabled in production!
     log.debug("Creating a vault with the settings:{}" +
+              "      type: {},{}" +
               "  password: {},{}" +
               "      salt: {},{}" +
               "iterations: {},{}" +
-              "  key size: {}",
+              "  key size: {},{}" +
+              "      path: {}",
               System.lineSeparator(),
               password, System.lineSeparator(),
+              type, System.lineSeparator(),
               salt, System.lineSeparator(),
               iterations, System.lineSeparator(),
-              keySize);
+              keySize, System.lineSeparator(),
+              path);
     final Vault vault;
     switch (type) {
       case IN_MEMORY:
         vault = new InMemoryVault(password, salt, iterations, keySize);
+        break;
+      case RAW_FILE:
+        vault = new ByteFileVault(password, salt, iterations, keySize, path);
         break;
       default:
         throw new IllegalStateException();
@@ -173,6 +202,7 @@ public final class VaultBuilder {
    * The enumeration of currently supported vault types
    */
   private enum VaultType {
-    IN_MEMORY
+    IN_MEMORY,
+    RAW_FILE
   }
 }

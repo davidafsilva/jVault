@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.vault;
 
 /*
  * #%L
@@ -62,10 +62,21 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import pt.davidafsilva.jvault.model.SecureEntry;
+import pt.davidafsilva.jvault.model.UnsecureEntry;
+
 import static java.util.stream.Collectors.toList;
 
 /**
- * An im-memory secure vault implementation
+ * An im-memory secure vault implementation.
+ *
+ * This vault implementation is thread-safe. It relies on a thread-safe collection to store the
+ * entries.
+ *
+ * The security settings applied in the vault are: <table> <tr> <td><strong>Cipher
+ * algorithm</strong></td> <td>{@value #CIPHER_SETTINGS}</td> </tr> <tr> <td><strong>Secret/Key
+ * derivation scheme</strong></td> <td>{@value #SECRET_SETTINGS}</td> </tr> <tr> <td><strong>Secret
+ * algorithm</strong></td> <td>{@value #SECRET_ALGORITHM}</td> </tr> </table>
  *
  * @author David Silva
  */
@@ -84,10 +95,10 @@ final class InMemoryVault implements Vault {
   private static final String SECRET_ALGORITHM = "AES";
 
   // the map where key-value entries are stored
-  private final Map<String, SecureEntryWrapper> map = new ConcurrentHashMap<>();
+  final Map<String, SecureEntryWrapper> map = new ConcurrentHashMap<>();
 
   // properties
-  private final SecretKey secret;
+  final SecretKey secret;
 
   /**
    * Creates a vault with the specified parameters.
@@ -205,11 +216,8 @@ final class InMemoryVault implements Vault {
       // create the wrapper with the IV
       final SecureEntryWrapper entryWrapper = new SecureEntryWrapper(secureEntry, initVector);
 
-      // store it in the map
-      map.put(entry.getKey(), entryWrapper);
-
-      // log the cipher
-      log.debug("secured '{}' into '{}", entry, entryWrapper);
+      // store
+      store(secureEntry, entryWrapper);
 
       // return the wrapper
       return entryWrapper;
@@ -219,6 +227,20 @@ final class InMemoryVault implements Vault {
           String.format("An error occurred while ciphering the entry with key: %s", entry.getKey()),
           e);
     }
+  }
+
+  /**
+   * Stores the given entry at the vault
+   *
+   * @param entry        the secured entry
+   * @param entryWrapper the secured entry wrapper
+   */
+  void store(final SecureEntry entry, final SecureEntryWrapper entryWrapper) {
+    // store it in the map
+    map.put(entry.getKey(), entryWrapper);
+
+    // log the cipher
+    log.debug("secured '{}' into '{}", entry, entryWrapper);
   }
 
   /**
@@ -261,7 +283,7 @@ final class InMemoryVault implements Vault {
 
   /**
    * The wrapper class for a secure entry, which adds the necessary initial vector used in the
-   * cipher of the {@link pt.davidafsilva.jvault.Entry}.
+   * cipher of the {@link pt.davidafsilva.jvault.model.Entry}.
    */
   static class SecureEntryWrapper {
 
@@ -275,7 +297,7 @@ final class InMemoryVault implements Vault {
      * @param entry the original secure entry
      * @param iv    the IV used in the cipher
      */
-    private SecureEntryWrapper(final SecureEntry entry, final byte[] iv) {
+    SecureEntryWrapper(final SecureEntry entry, final byte[] iv) {
       this.entry = entry;
       this.iv = iv;
     }

@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.vault;
 
 /*
  * #%L
@@ -33,21 +33,28 @@ package pt.davidafsilva.jvault;
  * #L%
  */
 
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
+
 /**
- * This exception denotes an error that occurred while the vault was executing some operation, such
- * as ciphering or deciphering entry data.
+ * Unit test for the in-memory implementation of the vault
  *
  * @author David Silva
  */
-public final class VaultOperationException extends Exception {
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class InMemoryVaultTest extends VaultTester<InMemoryVault> {
 
-  /**
-   * Constructs the operational exception with the error message and original cause.
-   *
-   * @param message the brief error description
-   * @param cause   the original cause of the exception
-   */
-  VaultOperationException(final String message, final Throwable cause) {
-    super(message, cause);
+  // the vault
+  private static InMemoryVault vault;
+
+  @BeforeClass
+  public static void setup() throws VaultInitializationException {
+    vault = new InMemoryVault("12345678901234567890123456789012", "12345678", 1024, 128);
+  }
+
+  @Override
+  InMemoryVault getVault() {
+    return vault;
   }
 }

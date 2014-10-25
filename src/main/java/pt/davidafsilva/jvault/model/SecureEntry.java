@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.model;
 
 /*
  * #%L
@@ -37,7 +37,9 @@ import java.time.Instant;
 
 /**
  * This entity represents a secured {@link Entry}, in which the {@link #getValue() value} is
- * cryptographically secured by a {@link Vault}.
+ * cryptographically secured by a {@link pt.davidafsilva.jvault.vault.Vault}.
+ *
+ * This class is immutable, therefore it inherits it's thread-safe nature.
  *
  * @author David Silva
  */
@@ -50,7 +52,7 @@ public final class SecureEntry extends AbstractEntry {
    * @param key       the original key
    * @param value     the secure value
    */
-  SecureEntry(final long timestamp, final String key, final String value) {
+  private SecureEntry(final long timestamp, final String key, final String value) {
     super(timestamp, key, value);
   }
 

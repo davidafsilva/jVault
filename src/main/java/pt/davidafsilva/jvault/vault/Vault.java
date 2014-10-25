@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.vault;
 
 /*
  * #%L
@@ -36,8 +36,13 @@ package pt.davidafsilva.jvault;
 import java.util.Collection;
 import java.util.Optional;
 
+import pt.davidafsilva.jvault.model.SecureEntry;
+import pt.davidafsilva.jvault.model.UnsecureEntry;
+
 /**
  * The secure vault definition.
+ *
+ * All of vault implementations must be secure and thread-safe by it's nature.
  *
  * @author David Silva
  */

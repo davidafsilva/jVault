@@ -1,4 +1,4 @@
-package pt.davidafsilva.jvault;
+package pt.davidafsilva.jvault.vault;
 
 /*
  * #%L
@@ -33,73 +33,31 @@ package pt.davidafsilva.jvault;
  * #L%
  */
 
-import java.util.Objects;
-
 /**
- * This entry contains the common code that both {@link UnsecureEntry unsecure} and {@link
- * SecureEntry secure} entries share.
+ * This exception denotes an error that occurred while an arbitrary vault was being initialized,
+ * such as invalid password and/or salts were provided, or the JVM not supporting the used
+ * algorithm.
  *
  * @author David Silva
  */
-class AbstractEntry implements Entry {
-
-  // properties
-  private final long timestamp;
-  private final String key;
-  private final String value;
+public final class VaultInitializationException extends Exception {
 
   /**
-   * Default constructor of the entry
+   * Constructs the initialization exception with the error message and original cause.
    *
-   * @param timestamp the entry's creation timestamp
-   * @param key       the entry key
-   * @param value     the entry value
+   * @param message the brief error description
+   * @param cause   the original cause of the exception
    */
-  AbstractEntry(final long timestamp, final String key, final String value) {
-    Objects.requireNonNull(key, "key must not be null");
-    Objects.requireNonNull(value, "value must not be null");
-    this.timestamp = timestamp;
-    this.key = key;
-    this.value = value;
+  VaultInitializationException(final String message, final Throwable cause) {
+    super(message, cause);
   }
 
-  @Override
-  public long getCreationDate() {
-    return timestamp;
-  }
-
-  @Override
-  public String getKey() {
-    return key;
-  }
-
-  @Override
-  public String getValue() {
-    return value;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    final AbstractEntry that = (AbstractEntry) o;
-    return key.equals(that.key) && value.equals(that.value);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = key.hashCode();
-    result = 31 * result + value.hashCode();
-    return result;
-  }
-
-  @Override
-  public String toString() {
-    return getClass().getSimpleName() + "{" + "key: " + key + ", value: " + value + "}";
+  /**
+   * Constructs the initialization exception with the error message and original cause.
+   *
+   * @param message the brief error description
+   */
+  VaultInitializationException(final String message) {
+    super(message);
   }
 }
