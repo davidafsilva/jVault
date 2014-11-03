@@ -5,9 +5,11 @@ The vault ciphers the entries value with AES (variant based on the specified key
 derived from a provided password (PBE) and salt. Padding is also added, if required.
 Additionally, file based vaults provide integrity check by including a MAC (HMAC with SHA-256) in the file 
 
-Currently, there are two vault implementation supported: 
-[In-Memory](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/InMemoryVault.java).
-[File](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/ByteFileVault.java).
+Currently, there are two vault implementation supported:
+
+- [In-Memory](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/InMemoryVault.java)
+- [File](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/ByteFileVault.java)
+- [Xml](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/XmlFileVault.java)
 
 
 Usage:

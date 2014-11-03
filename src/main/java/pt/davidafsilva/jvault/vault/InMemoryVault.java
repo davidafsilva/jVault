@@ -38,7 +38,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -112,7 +111,7 @@ final class InMemoryVault implements Vault {
    */
   InMemoryVault(final String password, final String salt, final int iterations,
                 final int keyLength) throws VaultInitializationException {
-    this(password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), iterations, keyLength);
+    this(password.toCharArray(), salt.getBytes(Vault.VAULT_CS), iterations, keyLength);
   }
 
   /**
@@ -195,7 +194,7 @@ final class InMemoryVault implements Vault {
   private SecureEntryWrapper secure(final UnsecureEntry entry) throws VaultOperationException {
     try {
       // get the byte data
-      final byte[] bValue = entry.getValue().getBytes(StandardCharsets.UTF_8);
+      final byte[] bValue = entry.getValue().getBytes(Vault.VAULT_CS);
 
       // get the cipher algorithm instance
       final Cipher cipher = Cipher.getInstance(CIPHER_SETTINGS);
@@ -263,7 +262,7 @@ final class InMemoryVault implements Vault {
 
       // decipher and convert
       final UnsecureEntry unsecureEntry = UnsecureEntry
-          .of(entry.entry.getKey(), new String(cipher.doFinal(bValue), StandardCharsets.UTF_8));
+          .of(entry.entry.getKey(), new String(cipher.doFinal(bValue), Vault.VAULT_CS));
 
       // log
       log.debug("unsecured '{}' into '{}", entry, unsecureEntry);

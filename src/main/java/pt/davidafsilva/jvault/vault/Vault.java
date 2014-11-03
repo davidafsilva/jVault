@@ -33,6 +33,8 @@ package pt.davidafsilva.jvault.vault;
  * #L%
  */
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -47,6 +49,9 @@ import pt.davidafsilva.jvault.model.UnsecureEntry;
  * @author David Silva
  */
 public interface Vault {
+
+  // the vaults charset
+  public static final Charset VAULT_CS = StandardCharsets.UTF_8;
 
   /**
    * Reads all of the stored entries from the vault.

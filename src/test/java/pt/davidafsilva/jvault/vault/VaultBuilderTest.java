@@ -110,4 +110,11 @@ public class VaultBuilderTest {
     final Vault vault = VaultBuilder.create().rawFile(path).password("abc").salt("123").build();
     assertNotNull(vault);
   }
+
+  @Test
+  public void test_success_xmlFile() throws VaultInitializationException, IOException {
+    final Path path = Files.createTempFile("pt.davidafsilva.jvault.", ".vault");
+    final Vault vault = VaultBuilder.create().xmlFile(path).password("abc").salt("123").build();
+    assertNotNull(vault);
+  }
 }

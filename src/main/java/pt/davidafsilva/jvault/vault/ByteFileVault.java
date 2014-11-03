@@ -38,25 +38,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.crypto.Mac;
 
 import pt.davidafsilva.jvault.model.SecureEntry;
-import pt.davidafsilva.jvault.model.UnsecureEntry;
 
 /**
  * A file based vault implementation, in which the data is stored in byte (raw) format.
@@ -81,22 +74,10 @@ import pt.davidafsilva.jvault.model.UnsecureEntry;
  *
  * @author David Silva
  */
-final class ByteFileVault implements FileVault {
+final class ByteFileVault extends AbstractFileVault<DataOutputStream> {
 
   // logger
   private static final Logger log = LoggerFactory.getLogger(ByteFileVault.class);
-
-  // the MAC algorithm
-  private static final String MAC_ALGORITHM = "HmacSHA256";
-
-  // the change flag
-  private final AtomicBoolean changed;
-
-  // the backed in-memory vault
-  private final InMemoryVault inMemoryVault;
-
-  // the path/file name
-  private final Path path;
 
   /**
    * Creates a vault with the specified parameters.
@@ -111,8 +92,7 @@ final class ByteFileVault implements FileVault {
    */
   ByteFileVault(final String password, final String salt, final int iterations,
                 final int keyLength, final Path path) throws VaultInitializationException {
-    this(password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8),
-         iterations, keyLength, path);
+    super(password, salt, iterations, keyLength, path);
   }
 
   /**
@@ -128,51 +108,12 @@ final class ByteFileVault implements FileVault {
    */
   ByteFileVault(final char[] password, final byte[] salt, final int iterations,
                 final int keyLength, final Path path) throws VaultInitializationException {
-    this.path = path;
-    final File fp = path.toFile();
-    if (fp.exists() && (!fp.isFile() || !fp.canRead())) {
-      throw new VaultInitializationException(
-          "Invalid vault file, not a file or no read permissions");
-    } else if (!fp.canWrite()) {
-      throw new VaultInitializationException(
-          "Invalid vault file, no write permissions");
-    }
-    inMemoryVault = new InMemoryVault(password, salt, iterations, keyLength);
-    changed = new AtomicBoolean(false);
-    // initialize the vault
-    load();
+    super(password, salt, iterations, keyLength, path);
   }
 
-  /**
-   * Loads the vault file contents.
-   *
-   * @throws VaultInitializationException if the any of the security settings are not supported or
-   *                                      an invalid key is used.
-   */
-  private void load() throws VaultInitializationException {
-    try {
-      log.info("initializing the vault from file..");
-      final File fp = path.toFile();
-      // check the file
-      if (fp.exists() && fp.canRead() && fp.isFile()) {
-        // read the data
-        final byte[] data = Files.readAllBytes(path);
-        if (data.length > 0) {
-          buildVaultFromData(data);
-          log.info("vault successfully loaded");
-        } else {
-          log.info("no entries in the vault.");
-        }
-      } else if (fp.exists()) {
-        log.error("unable to read the vault file");
-        throw new IOException("Unable to read the vault file");
-      } else {
-        log.info("no file for loading, skipping load.");
-      }
-    } catch (final IOException ioe) {
-      log.error("I/O error", ioe);
-      throw new VaultInitializationException("Unable to load vault file", ioe);
-    }
+  @Override
+  DataOutputStream createStream(final Path path) throws FileNotFoundException {
+    return new DataOutputStream(new FileOutputStream(path.toFile()));
   }
 
   /**
@@ -181,7 +122,8 @@ final class ByteFileVault implements FileVault {
    * @param data the file data
    * @throws VaultCorruptedException if the data is corrupted
    */
-  private void buildVaultFromData(final byte[] data)
+  @Override
+  void buildVaultFromData(final byte[] data)
       throws VaultCorruptedException, VaultInitializationException {
     final ByteBuffer byteBuffer = ByteBuffer.wrap(data);
     // read MAC related
@@ -190,7 +132,7 @@ final class ByteFileVault implements FileVault {
     if (macLength <= 0) {
       log.error("invalid MAC length read (mac len: {}b; remaining: {}b)", macLength,
                 byteBuffer.remaining());
-      throw new VaultCorruptedException("vault structured is corrupted");
+      vaultCorrupted();
     }
     ensureBufferCapacity(byteBuffer, macLength);
     log.debug("MAC len: {}b", macLength);
@@ -211,7 +153,7 @@ final class ByteFileVault implements FileVault {
       final byte[] calculatedMAC = calculateMAC(vaultData);
       if (!Arrays.equals(mac, calculatedMAC)) {
         log.error("invalid MAC found: {}", Hex.encodeHexString(calculatedMAC));
-        throw new VaultCorruptedException("vault structured is corrupted");
+        vaultCorrupted();
       }
     } catch (final NoSuchAlgorithmException | InvalidKeyException e) {
       log.error("invalid keys / mac algorithm", e);
@@ -240,8 +182,8 @@ final class ByteFileVault implements FileVault {
       byteBuffer.get(iv);
 
       // create the entry
-      final SecureEntry secureEntry = SecureEntry.of(new String(key, StandardCharsets.UTF_8),
-                                                     new String(value, StandardCharsets.UTF_8));
+      final SecureEntry secureEntry = SecureEntry.of(new String(key, Vault.VAULT_CS),
+                                                     new String(value, Vault.VAULT_CS));
       final InMemoryVault.SecureEntryWrapper secureEntryWrapper =
           new InMemoryVault.SecureEntryWrapper(secureEntry, iv);
       // write entry to the vault
@@ -265,172 +207,38 @@ final class ByteFileVault implements FileVault {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * This implementation ignores concurrent calls to this method, adhering to
-   */
   @Override
-  public void persist() throws IOException, VaultOperationException {
-    if (changed.compareAndSet(true, false)) {
-      final Collection<InMemoryVault.SecureEntryWrapper> values = inMemoryVault.map.values();
-      try (final DataOutputStream stream = new DataOutputStream(
-          new FileOutputStream(path.toFile()))) {
-        writeMac(stream, values);
-        writeEntries(stream, values);
-        stream.flush();
-      } catch (final NoSuchAlgorithmException | InvalidKeyException e) {
-        throw new VaultOperationException("Invalid keys or unsupported MAC algorithm", e);
-      }
-    }
-  }
-
-  /**
-   * Calculates the cryptographic MAC of the given collection of secure entries.
-   *
-   * @param values the entries to be included in the mac calculation
-   * @return the cryptographic MAC
-   * @throws NoSuchAlgorithmException if the chosen MAC algorithm does not exist
-   * @throws InvalidKeyException      if the give used for the MAC is invalid
-   */
-  protected byte[] calculateMAC(final Collection<InMemoryVault.SecureEntryWrapper> values)
-      throws NoSuchAlgorithmException, InvalidKeyException {
-    // initialize the mac
-    final Mac mac = Mac.getInstance(MAC_ALGORITHM);
-    mac.init(inMemoryVault.secret);
-
-    //TODO:
-    // check performance of this lambda, 2 iterations -> map + foreach update
-
-    // calculate the byte array length
-    // 1. # entries (int)
-    // 2. key len (int) + key data
-    // 3. value len (int) + value data
-    // 4. iv len (int) + iv data
-    final int len = values.stream().mapToInt(wrapper -> {
-      final byte[] key = wrapper.entry.getKey().getBytes(StandardCharsets.UTF_8);
-      final byte[] value = wrapper.entry.getValue().getBytes(StandardCharsets.UTF_8);
-      final byte[] iv = wrapper.iv;
-      return (3 * Integer.BYTES) + key.length + value.length + iv.length;
-    }).sum() + Integer.BYTES;
-
-    // allocate the buffer
-    final ByteBuffer buffer = ByteBuffer.allocate(len);
-
-    // write the data to be maced
-    buffer.putInt(values.size());
-    values.forEach(wrapper -> {
-      final byte[] key = wrapper.entry.getKey().getBytes(StandardCharsets.UTF_8);
-      final byte[] value = wrapper.entry.getValue().getBytes(StandardCharsets.UTF_8);
-      final byte[] iv = wrapper.iv;
-      buffer.putInt(key.length).putInt(value.length).putInt(iv.length).put(key).put(value)
-          .put(iv);
-    });
-
-    // calculate the mac
-    return mac.doFinal(buffer.array());
-  }
-
-  /**
-   * Calculates the MAC of the given byte data
-   *
-   * @param data the byte data
-   * @return the mac of the byte data
-   * @throws NoSuchAlgorithmException if the chosen MAC algorithm does not exist
-   * @throws InvalidKeyException      if the give used for the MAC is invalid
-   */
-  protected byte[] calculateMAC(final byte[] data)
-      throws NoSuchAlgorithmException, InvalidKeyException {
-    // initialize the mac
-    final Mac mac = Mac.getInstance(MAC_ALGORITHM);
-    mac.init(inMemoryVault.secret);
-    // calculate the mac
-    return mac.doFinal(data);
-  }
-
-  /**
-   * Calculates and writes the cryptographic MAC for the given entries to the specified stream.
-   *
-   * @param stream the stream where to write the data
-   * @param values the entries to be included in the mac calculation
-   * @throws IOException              if an I/O error occurs while writing the data
-   * @throws NoSuchAlgorithmException if the chosen MAC algorithm does not exist
-   * @throws InvalidKeyException      if the give used for the MAC is invalid
-   */
-
-  private void writeMac(final DataOutputStream stream,
-                        final Collection<InMemoryVault.SecureEntryWrapper> values)
-      throws IOException, InvalidKeyException, NoSuchAlgorithmException {
-    // calculate and write the MAC
-    final byte[] mac = calculateMAC(values);
-    stream.writeInt(mac.length);
-    stream.write(mac);
+  void writeMac(final DataOutputStream stream, final byte[] mac) throws IOException {
     if (log.isDebugEnabled()) {
       log.debug("writing MAC: {}", Hex.encodeHexString(mac));
     }
+    stream.writeInt(mac.length);
+    stream.write(mac);
   }
 
-  /**
-   * Calculates and writes the given entries to the specified stream.
-   *
-   * @param stream the stream where to write the data
-   * @param values the entries to written
-   * @throws IOException if an I/O error occurs while writing the data
-   */
-  private void writeEntries(final DataOutputStream stream,
-                            final Collection<InMemoryVault.SecureEntryWrapper> values)
-      throws IOException {
+  @Override
+  void writeEntries(final DataOutputStream stream,
+                    final Collection<InMemoryVault.SecureEntryWrapper> values) throws IOException {
     // write the # of entries
     stream.writeInt(values.size());
     // store the vault values
     values.forEach(wrapper -> {
-      final byte[] key = wrapper.entry.getKey().getBytes(StandardCharsets.UTF_8);
-      final byte[] value = wrapper.entry.getValue().getBytes(StandardCharsets.UTF_8);
+      final byte[] key = wrapper.entry.getKey().getBytes(Vault.VAULT_CS);
+      final byte[] value = wrapper.entry.getValue().getBytes(Vault.VAULT_CS);
       final byte[] iv = wrapper.iv;
       try {
+        if (log.isDebugEnabled()) {
+          log.debug("writing entry: {}", wrapper);
+        }
         stream.writeInt(key.length);
         stream.writeInt(value.length);
         stream.writeInt(iv.length);
         stream.write(key);
         stream.write(value);
         stream.write(iv);
-        if (log.isDebugEnabled()) {
-          log.debug("writing entry: {}", wrapper);
-        }
       } catch (final IOException ioe) {
         throw new UncheckedIOException(ioe);
       }
     });
-  }
-
-  @Override
-  public Collection<SecureEntry> read() {
-    return inMemoryVault.read();
-  }
-
-  @Override
-  public Optional<SecureEntry> read(final String key) {
-    return inMemoryVault.read(key);
-  }
-
-  @Override
-  public SecureEntry write(final UnsecureEntry entry) throws VaultOperationException {
-    final SecureEntry secureEntry = inMemoryVault.write(entry);
-    changed.set(true);
-    return secureEntry;
-  }
-
-  @Override
-  public Optional<SecureEntry> delete(final String key) {
-    final Optional<SecureEntry> secureEntryOptional = inMemoryVault.delete(key);
-    if (secureEntryOptional.isPresent()) {
-      changed.set(true);
-    }
-    return secureEntryOptional;
-  }
-
-  @Override
-  public UnsecureEntry translate(final SecureEntry entry) throws VaultOperationException {
-    return inMemoryVault.translate(entry);
   }
 }

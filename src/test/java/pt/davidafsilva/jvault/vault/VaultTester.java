@@ -61,22 +61,22 @@ abstract class VaultTester<T extends Vault> {
   abstract T getVault();
 
   @Test
-  public void test_1_read_noElements() {
+  public void test_a_read_noElements() {
     assertTrue(getVault().read().isEmpty());
   }
 
   @Test
-  public void test_2_read_invalidKey() {
+  public void test_b_read_invalidKey() {
     assertFalse(getVault().read("key").isPresent());
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void test_3_translateEntryNotInVault() throws VaultOperationException {
+  public void test_c_translateEntryNotInVault() throws VaultOperationException {
     getVault().translate(SecureEntry.of("k", "k"));
   }
 
   @Test
-  public void test_4_write() throws VaultOperationException {
+  public void test_d_write() throws VaultOperationException {
     // write
     final SecureEntry secureEntry = getVault().write(UnsecureEntry.of("key1", "dummy"));
     assertNotNull(secureEntry);
@@ -94,7 +94,7 @@ abstract class VaultTester<T extends Vault> {
   }
 
   @Test
-  public void test_5_read() throws VaultOperationException {
+  public void test_e_read() throws VaultOperationException {
     // read all of the secure entries
     final Collection<SecureEntry> secureEntries = getVault().read();
     assertEquals(1, secureEntries.size());
@@ -102,7 +102,7 @@ abstract class VaultTester<T extends Vault> {
   }
 
   @Test
-  public void test_6_delete() throws VaultOperationException {
+  public void test_f_delete() throws VaultOperationException {
     // delete entry
     final Optional<SecureEntry> secureEntryOptional = getVault().delete("key1");
     assertTrue(secureEntryOptional.isPresent());
@@ -112,7 +112,7 @@ abstract class VaultTester<T extends Vault> {
   }
 
   @Test
-  public void test_7_writeTwo() throws VaultOperationException {
+  public void test_h_writeTwo() throws VaultOperationException {
     // write
     final SecureEntry secureEntry1 = getVault().write(UnsecureEntry.of("key1", "dummy1"));
     final SecureEntry secureEntry2 = getVault().write(UnsecureEntry.of("key2", "dummy2"));

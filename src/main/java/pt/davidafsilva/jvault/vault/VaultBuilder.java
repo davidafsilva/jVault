@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,21 +45,10 @@ import java.util.Objects;
 /**
  * The vaults builder.
  *
- * The builders defaults to the following settings:
- * <table summary="Default builder settings">
- *   <tr>
- *     <td><strong>Vault Type</strong></td>
- *     <td>In-Memory</td>
- *   </tr>
- *   <tr>
- *     <td><strong>Iterations</strong></td>
- *     <td>{@value #DEFAULT_ITERATIONS}</td>
- *   </tr>
- *   <tr>
- *     <td><strong>Key Size</strong></td>
- *     <td>{@value #DEFAULT_KEY_SIZE}</td>
- *   </tr>
- * </table>
+ * The builders defaults to the following settings: <table summary="Default builder settings"> <tr>
+ * <td><strong>Vault Type</strong></td> <td>In-Memory</td> </tr> <tr>
+ * <td><strong>Iterations</strong></td> <td>{@value #DEFAULT_ITERATIONS}</td> </tr> <tr>
+ * <td><strong>Key Size</strong></td> <td>{@value #DEFAULT_KEY_SIZE}</td> </tr> </table>
  *
  * @author David Silva
  */
@@ -113,6 +101,28 @@ public final class VaultBuilder {
    * @return the current builder
    */
   public VaultBuilder rawFile(final Path path) {
+    fileBased(path, VaultType.RAW_FILE);
+    return this;
+  }
+
+  /**
+   * Selects the XML file vault implementation to be built.
+   *
+   * @param path the vault file
+   * @return the current builder
+   */
+  public VaultBuilder xmlFile(final Path path) {
+    fileBased(path, VaultType.RAW_FILE);
+    return this;
+  }
+
+  /**
+   * Sets the file based type of the vault
+   *
+   * @param path the vault file
+   * @param type the type of the vault
+   */
+  private void fileBased(final Path path, final VaultType type) {
     Objects.requireNonNull(path, "Invalid vault file");
     final File fp = path.toFile();
     if (fp.exists() && (!fp.isFile() || !fp.canRead())) {
@@ -121,8 +131,7 @@ public final class VaultBuilder {
       throw new IllegalArgumentException("Invalid vault file, no write permissions");
     }
     this.path = path;
-    this.type = VaultType.RAW_FILE;
-    return this;
+    this.type = type;
   }
 
   /**
@@ -157,7 +166,7 @@ public final class VaultBuilder {
    */
   public VaultBuilder salt(final String salt) {
     Objects.requireNonNull(salt, "Invalid salt");
-    this.salt = salt.getBytes(StandardCharsets.UTF_8);
+    this.salt = salt.getBytes(Vault.VAULT_CS);
     return this;
   }
 
@@ -235,6 +244,9 @@ public final class VaultBuilder {
       case RAW_FILE:
         vault = new ByteFileVault(password, salt, iterations, keySize, path);
         break;
+      case XML_FILE:
+        vault = new XmlFileVault(password, salt, iterations, keySize, path);
+        break;
       default:
         throw new IllegalStateException();
     }
@@ -247,6 +259,7 @@ public final class VaultBuilder {
    */
   private enum VaultType {
     IN_MEMORY,
-    RAW_FILE
+    RAW_FILE,
+    XML_FILE
   }
 }
