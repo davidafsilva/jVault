@@ -25,10 +25,21 @@ Usage:
                             .build();
 ```
 
-#### 2. Use the VaultBuilder to initialize a file based secure vault
+#### 2. Use the VaultBuilder to initialize a (byte/raw) file based secure vault
 ```java
    final Vault vault = VaultBuilder.create()
                             .rawFile(FileSystems.getDefault().getPath("vaults", "notes.vault"))
+                            .password("PM6CduB3rAhcdEKN961NR0583620vHJM")
+                            .salt("naoQ8qbq")
+                            .iterations(32768)
+                            .keySize(256)
+                            .build();
+```
+
+#### 3. Use the VaultBuilder to initialize a XML based secure vault
+```java
+   final Vault vault = VaultBuilder.create()
+                            .xmlFile(FileSystems.getDefault().getPath("vaults", "notes.vault"))
                             .password("PM6CduB3rAhcdEKN961NR0583620vHJM")
                             .salt("naoQ8qbq")
                             .iterations(32768)
