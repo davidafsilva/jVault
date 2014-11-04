@@ -9,7 +9,8 @@ Currently, these are the supported vault implementation:
 
 - [In-Memory](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/InMemoryVault.java)
 - [File](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/ByteFileVault.java)
-- [Xml](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/XmlFileVault.java)
+- [XML](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/XmlFileVault.java)
+- [JSON](https://github.com/davidafsilva/jVault/blob/master/src/main/java/pt/davidafsilva/jvault/vault/JsonFileVault.java)
 
 
 Usage:
@@ -40,6 +41,17 @@ Usage:
 ```java
    final Vault vault = VaultBuilder.create()
                             .xmlFile(FileSystems.getDefault().getPath("vaults", "notes.vault"))
+                            .password("PM6CduB3rAhcdEKN961NR0583620vHJM")
+                            .salt("naoQ8qbq")
+                            .iterations(32768)
+                            .keySize(256)
+                            .build();
+```
+
+#### 3. Use the VaultBuilder to initialize a XML based secure vault
+```java
+   final Vault vault = VaultBuilder.create()
+                            .jsonFile(FileSystems.getDefault().getPath("vaults", "notes.vault"))
                             .password("PM6CduB3rAhcdEKN961NR0583620vHJM")
                             .salt("naoQ8qbq")
                             .iterations(32768)

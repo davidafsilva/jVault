@@ -117,6 +117,17 @@ public final class VaultBuilder {
   }
 
   /**
+   * Selects the JSON file vault implementation to be built.
+   *
+   * @param path the vault file
+   * @return the current builder
+   */
+  public VaultBuilder jsonFile(final Path path) {
+    fileBased(path, VaultType.JSON_FILE);
+    return this;
+  }
+
+  /**
    * Sets the file based type of the vault
    *
    * @param path the vault file
@@ -247,6 +258,9 @@ public final class VaultBuilder {
       case XML_FILE:
         vault = new XmlFileVault(password, salt, iterations, keySize, path);
         break;
+      case JSON_FILE:
+        vault = new JsonFileVault(password, salt, iterations, keySize, path);
+        break;
       default:
         throw new IllegalStateException();
     }
@@ -260,6 +274,7 @@ public final class VaultBuilder {
   private enum VaultType {
     IN_MEMORY,
     RAW_FILE,
-    XML_FILE
+    XML_FILE,
+    JSON_FILE
   }
 }

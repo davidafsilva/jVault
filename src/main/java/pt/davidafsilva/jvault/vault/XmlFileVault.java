@@ -36,7 +36,8 @@ import static org.apache.commons.lang3.StringEscapeUtils.unescapeXml;
  * {@code
  *   <?xml version="1.1" encoding="UTF-8" standalone="yes"?>
  *   <vault>
- *     <mac></mac>
+ *     <mac>MAC</mac>
+ *     <numberEntries># of entries</numberEntries>
  *     <entries>
  *       <entry>
  *         <key>key</key>
@@ -55,7 +56,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.unescapeXml;
  *
  * @author David Silva
  */
-public class XmlFileVault extends AbstractFileVault<DataOutputStream> {
+final class XmlFileVault extends AbstractFileVault<DataOutputStream> {
 
   // logger
   private static final Logger log = LoggerFactory.getLogger(XmlFileVault.class);
@@ -117,7 +118,7 @@ public class XmlFileVault extends AbstractFileVault<DataOutputStream> {
         vaultCorrupted();
       }
 
-      // 2 <mac>
+      // 2. <mac>
       if (!reader.hasNext() || reader.next() != XMLEvent.START_ELEMENT || !"mac"
           .equals(reader.getLocalName())) {
         log.error("unable to read vault mac element");
@@ -128,10 +129,10 @@ public class XmlFileVault extends AbstractFileVault<DataOutputStream> {
         log.debug("MAC: {}", Hex.encodeHexString(mac));
       }
 
-      // 3 <numberEntries>
+      // 3. <numberEntries>
       if (!reader.hasNext() || reader.next() != XMLEvent.START_ELEMENT || !"numberEntries"
           .equals(reader.getLocalName())) {
-        log.error("unable to read vault mac element");
+        log.error("unable to read vault numberEntries element");
         vaultCorrupted();
       }
       final int numberEntries = Integer.valueOf(reader.getElementText());
@@ -149,6 +150,7 @@ public class XmlFileVault extends AbstractFileVault<DataOutputStream> {
 
       // 5. <entry>?</entry> ...
       for (int i = 0; i < numberEntries; i++) {
+        // 5.0 <entry>
         if (!reader.hasNext() || reader.next() != XMLEvent.START_ELEMENT || !"entry"
             .equals(reader.getLocalName())) {
           log.error("unable to read vault entry (start) element");
