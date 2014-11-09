@@ -33,6 +33,7 @@ package pt.davidafsilva.jvault.vault;
  * #L%
  */
 
+import org.junit.AfterClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -115,5 +116,11 @@ public abstract class FileVaultTest extends VaultTester<FileVault> {
       w.flush();
     }
     vault = createVault(vaultFile);
+  }
+
+  @AfterClass
+  public static void cleanUp() {
+    vault = null;
+    vaultFile = null;
   }
 }

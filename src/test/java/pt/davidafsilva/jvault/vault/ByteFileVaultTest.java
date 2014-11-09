@@ -33,6 +33,9 @@ package pt.davidafsilva.jvault.vault;
  * #L%
  */
 
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
+
 import java.nio.file.Path;
 
 /**
@@ -40,6 +43,7 @@ import java.nio.file.Path;
  *
  * @author David Silva
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ByteFileVaultTest extends FileVaultTest {
 
   @Override
