@@ -48,7 +48,7 @@ Usage:
                             .build();
 ```
 
-#### 3. Use the VaultBuilder to initialize a XML based secure vault
+#### 4. Use the VaultBuilder to initialize a JSON based secure vault
 ```java
    final Vault vault = VaultBuilder.create()
                             .jsonFile(FileSystems.getDefault().getPath("vaults", "notes.vault"))
