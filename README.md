@@ -1,4 +1,4 @@
-jVault
+jVault [![Build Status](https://travis-ci.org/davidafsilva/jVault.svg?branch=master)](https://travis-ci.org/davidafsilva/jVault)
 =============
 jVault is a secure key-value pairs storage.<br/>
 The vault ciphers the entries value with AES (variant based on the specified key size) with a key 
