@@ -8,6 +8,19 @@
     <artifactId>jvault</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <!-- SCM configuration -->
+    <scm>
+        <connection>scm:git:git@github.com:davidafsilva/jVault.git</connection>
+        <developerConnection>scm:git:git@github.com:davidafsilva/jVault.git</developerConnection>
+        <url>https://github.com/davidafsilva/jVault</url>
+        <tag>HEAD</tag>
+    </scm>
+    <!-- CI configuration -->
+    <ciManagement>
+        <system>Travis CI</system>
+        <url>https://travis-ci.org/davidafsilva/jVault</url>
+    </ciManagement>
+
     <!-- project properties -->
     <properties>
         <!-- code encoding -->
