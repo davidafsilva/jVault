@@ -18,7 +18,7 @@
     <!-- CI configuration -->
     <ciManagement>
         <system>Travis CI</system>
-        <url>https://travis-ci.org/davidafsilva/jVault</url>
+        <url>https://codeship.com/projects/49190</url>
     </ciManagement>
 
     <!-- project properties -->
