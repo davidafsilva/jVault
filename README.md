@@ -1,4 +1,4 @@
-jVault [![Build Status for davidafsilva/jVault](https://codeship.com/projects/ecd74dd0-545c-0132-ea32-42ab35009c21/status)](https://codeship.com/projects/49190)
+jVault [![Build Status for davidafsilva/jVault](https://img.shields.io/codeship/ecd74dd0-545c-0132-ea32-42ab35009c21/master.svg?style=flat-square)](https://codeship.com/projects/49190) [![Coverage Status for davidafsilva/jVault](http://img.shields.io/coveralls/davidafsilva/jVault/master.svg?style=flat-square)](https://coveralls.io/r/davidafsilva/jVault?branch=master)
 =============
 jVault is a secure key-value pairs storage.<br/>
 The vault ciphers the entries value with AES (variant based on the specified key size) with a key 

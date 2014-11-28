@@ -46,6 +46,9 @@
         <jacoco.version>0.7.2.201409121644</jacoco.version>
         <jacoco.reportFilePath>${project.build.directory}/jacoco.exec</jacoco.reportFilePath>
         <jacoco.reportPagePath>${project.reporting.outputDirectory}/jacoco</jacoco.reportPagePath>
+
+        <!-- coveralls -->
+        <maven.coveralls.version>3.0.1</maven.coveralls.version>
     </properties>
 
     <!-- project dependencies -->
@@ -165,6 +168,12 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- coveralls integration -->
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${maven.coveralls.version}</version>
             </plugin>
             <!-- license handling -->
             <plugin>
