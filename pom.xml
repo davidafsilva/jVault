@@ -41,6 +41,11 @@
         <maven.source.version>2.3</maven.source.version>
         <maven.javadoc.version>2.10.1</maven.javadoc.version>
         <javac.version>1.8</javac.version>
+
+        <!-- JaCoCo -->
+        <jacoco.version>0.7.2.201409121644</jacoco.version>
+        <jacoco.reportFilePath>${project.build.directory}/jacoco.exec</jacoco.reportFilePath>
+        <jacoco.reportPagePath>${project.reporting.outputDirectory}/jacoco</jacoco.reportPagePath>
     </properties>
 
     <!-- project dependencies -->
@@ -124,6 +129,40 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- JaCoCo -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data. -->
+                            <destFile>${jacoco.reportFilePath}</destFile>
+                            <includes>
+                                <include>pt.davidafsilva.*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data. -->
+                            <dataFile>${jacoco.reportFilePath}</dataFile>
+                            <!-- Sets the output directory for the code coverage report. -->
+                            <outputDirectory>${jacoco.reportPagePath}</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

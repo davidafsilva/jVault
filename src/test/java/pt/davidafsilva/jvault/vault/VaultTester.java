@@ -93,12 +93,24 @@ abstract class VaultTester<T extends Vault> {
     assertEquals("dummy", unsecureEntry.getValue());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void test_e_translateEntrySameKeyDiffVault() throws Exception {
+    getVault().translate(SecureEntry.of("key1", "wo"));
+  }
+
   @Test
   public void test_e_read() throws VaultOperationException {
     // read all of the secure entries
     final Collection<SecureEntry> secureEntries = getVault().read();
     assertEquals(1, secureEntries.size());
     assertEquals("key1", secureEntries.iterator().next().getKey());
+  }
+
+  @Test
+  public void test_f_deleteInvalid() throws VaultOperationException {
+    // delete entry
+    final Optional<SecureEntry> secureEntryOptional = getVault().delete("key122");
+    assertFalse(secureEntryOptional.isPresent());
   }
 
   @Test

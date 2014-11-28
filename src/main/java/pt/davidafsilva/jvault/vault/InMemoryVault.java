@@ -176,7 +176,7 @@ final class InMemoryVault implements Vault {
   @Override
   public UnsecureEntry translate(final SecureEntry entry) throws VaultOperationException {
     final SecureEntryWrapper secureEntryWrapper = map.get(entry.getKey());
-    if (secureEntryWrapper == null) {
+    if (secureEntryWrapper == null || !secureEntryWrapper.entry.equals(entry)) {
       final String errorMessage = String.format("no such key '%s' in the vault.", entry.getKey());
       log.error(errorMessage);
       throw new IllegalArgumentException(errorMessage);

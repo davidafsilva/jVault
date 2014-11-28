@@ -36,6 +36,7 @@ package pt.davidafsilva.jvault.vault;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -48,6 +49,11 @@ import static org.junit.Assert.assertTrue;
  * @author David Silva
  */
 public class VaultBuilderTest {
+
+  @Test(expected = IllegalStateException.class)
+  public void test_dummyType() throws VaultInitializationException {
+    VaultBuilder.create().type(VaultBuilder.VaultType.DUMMY).password("123").salt("321").build();
+  }
 
   @Test(expected = NullPointerException.class)
   public void test_invalidPassword_str() {
@@ -84,18 +90,31 @@ public class VaultBuilderTest {
     VaultBuilder.create().rawFile(null);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = IllegalArgumentException.class)
+  public void test_invalidFile_doesNotExist() throws IOException {
+    final Path path = Files.createTempFile("pt.davidafsilva.jvault.", ".vault");
+    assertTrue(path.toFile().delete());
+    VaultBuilder.create().rawFile(path);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void test_invalidFile_isDirectory() throws IOException {
+    final Path path = Files.createTempDirectory("pt.davidafsilva.jvault.");
+    VaultBuilder.create().rawFile(path);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
   public void test_invalidFile_noReadPermissions() throws IOException {
     final Path path = Files.createTempFile("pt.davidafsilva.jvault.", ".vault");
     assertTrue(path.toFile().setReadable(false));
-    VaultBuilder.create().rawFile(null);
+    VaultBuilder.create().rawFile(path);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void test_invalidFile_noWritePermissions() throws IOException {
     final Path path = Files.createTempFile("pt.davidafsilva.jvault.", ".vault");
     assertTrue(path.toFile().setWritable(false));
-    VaultBuilder.create().rawFile(null);
+    VaultBuilder.create().rawFile(path);
   }
 
   @Test
@@ -114,7 +133,24 @@ public class VaultBuilderTest {
   @Test
   public void test_success_xmlFile() throws VaultInitializationException, IOException {
     final Path path = Files.createTempFile("pt.davidafsilva.jvault.", ".vault");
-    final Vault vault = VaultBuilder.create().xmlFile(path).password("abc").salt("123").build();
+    final Vault vault = VaultBuilder.create()
+        .xmlFile(path)
+        .password("abc")
+        .salt(ByteBuffer.allocate(3).put((byte) 0x10).put((byte) 0x20).put((byte) 0x30).array())
+        .build();
+    assertNotNull(vault);
+  }
+
+  @Test
+  public void test_success_jsonFile() throws VaultInitializationException, IOException {
+    final Path path = Files.createTempFile("pt.davidafsilva.jvault.", ".vault");
+    final Vault vault = VaultBuilder.create()
+        .iterations(1024)
+        .keySize(128)
+        .jsonFile(path)
+        .password("abc".toCharArray())
+        .salt("123")
+        .build();
     assertNotNull(vault);
   }
 }

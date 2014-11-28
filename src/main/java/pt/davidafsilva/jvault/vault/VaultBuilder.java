@@ -112,7 +112,7 @@ public final class VaultBuilder {
    * @return the current builder
    */
   public VaultBuilder xmlFile(final Path path) {
-    fileBased(path, VaultType.RAW_FILE);
+    fileBased(path, VaultType.XML_FILE);
     return this;
   }
 
@@ -142,7 +142,18 @@ public final class VaultBuilder {
       throw new IllegalArgumentException("Invalid vault file, no write permissions");
     }
     this.path = path;
+    type(type);
+  }
+
+  /**
+   * Sets the vault type to be used
+   *
+   * @param type the vault type
+   * @return the current builder
+   */
+  VaultBuilder type(final VaultType type) {
     this.type = type;
+    return this;
   }
 
   /**
@@ -271,10 +282,11 @@ public final class VaultBuilder {
   /**
    * The enumeration of currently supported vault types
    */
-  private enum VaultType {
+  static enum VaultType {
     IN_MEMORY,
     RAW_FILE,
     XML_FILE,
-    JSON_FILE
+    JSON_FILE,
+    DUMMY
   }
 }
