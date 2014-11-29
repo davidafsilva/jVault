@@ -17,7 +17,7 @@
     </scm>
     <!-- CI configuration -->
     <ciManagement>
-        <system>Travis CI</system>
+        <system>codeship</system>
         <url>https://codeship.com/projects/49190</url>
     </ciManagement>
 
