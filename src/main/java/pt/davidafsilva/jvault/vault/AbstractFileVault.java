@@ -41,7 +41,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
@@ -171,7 +170,7 @@ abstract class AbstractFileVault<S extends OutputStream> implements FileVault {
    * @throws VaultCorruptedException with a generic corruption message
    */
   void vaultCorrupted() {
-    throw new VaultCorruptedException("vault structured is corrupted");
+    throw new VaultCorruptedException("invalid key or vault structured is corrupted");
   }
 
   /**
