@@ -60,7 +60,7 @@ public final class VaultBuilder {
   // static properties / defaults
   private static final Collection<Integer> SUPPORTED_KEY_SIZES = Arrays.asList(128, 192, 256);
   private static final int DEFAULT_ITERATIONS = 65536;
-  private static final int DEFAULT_KEY_SIZE = 256;
+  private static final int DEFAULT_KEY_SIZE = 128;
   private static final VaultType DEFAULT_VAULT_TYPE = VaultType.IN_MEMORY;
 
   // properties
