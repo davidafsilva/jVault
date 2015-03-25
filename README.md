@@ -59,6 +59,11 @@ Usage:
                             .build();
 ```
 
+Key sizes:
+------
+Beware of the out-of-the-box restrictions that Java has regarding key sizes, the jurisdiction policy files shipped with the Java SE Development Kit allow "strong" but limited cryptography to be used.
+For more information please visit the [JCA Docs](http://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#importlimits).
+
 Logging:
 ------
 Beware of logging in the current release, debug logging might expose sensitive data. As such, 
